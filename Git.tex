@@ -1,0 +1,622 @@
+\documentclass[german,a4paper]{report}
+
+\usepackage[german]{babel}
+\usepackage{graphicx}             % Benoetigt, um Grafiken einzubinden
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{german}
+\usepackage{ae}
+
+\usepackage[latin1]{inputenc}           % Umlaute und dt. Zeichen Kodieren
+
+% ae.sty verwenden!
+\usepackage[T1]{fontenc}                % ec* Schriftarten verwenden
+
+\usepackage{times}                      % Times-Schriftart (pdf)
+\usepackage{calc}
+
+\begin{document}
+
+\title{GIT - Eine Einf"uhrung}
+\author{Hauke Z"uhl <hzuehl@hauke-zuehl.de>}
+
+\maketitle
+
+\tableofcontents
+
+\chapter{Was ist GIT?}
+GIT ist ein sogenanntes ``Versionskontrollsystem'' von Dateien in Projekten, das heisst,
+man kann die Ver"anderungen, die an Dateien im Laufe der Zeit durchgef"uhrt werden,
+nachvollziehen. Dabei werden nicht nur Zeitstempel gespeichert, sondern auch welcher
+Benutzer die "Anderungen durchgef"uhrt hat. Dies ist dann ein Versionsstand eines
+Projektes.
+
+GIT speichert also nur Ver"anderungen. Gut, bei sog. ``Bin"ardateien'', also zum Beispiel
+LibreOffice-Dokumenten, geht das nicht, aber das ist ein anderes Thema. Immerhin kann
+man aber auch LO-Dokumente speichern, wie man an und f"ur sich alles, was eine Datei ist,
+in GIT gespeichert werden kann.
+
+Was GIT besonders macht, ist die Tatsache, dass es dezentral ist. Das bedeutet, dass jeder,
+der ein Projekt aus GIT herunterl"adt (man sagt auch ``auschecken'' dazu) den kompletten
+Versionsverlauf auf seinem Rechner als lokale Kopie verliegen hat.
+
+Im ersten Moment mag das ein Nachteil sein, denn man will ja nicht die Dateiversionen
+haben, die Max Mustermann vor 10 Jahren in GIT hochgeladen hat, aber keine Sorge, GIT
+arbeitet recht platzsparend.
+
+Der Vorteil dieser Methode ist, dass man dadurch mindestens eine Sicherheitskopie auf
+einem Rechner hat.
+Arbeiten mehrere Leute an einem Projekt, kommen so diverse Sicherheitskopien zustande.
+
+Diese Einf"uhrung soll mit einfachen Worten und Beispielen an GIT heranf"uhren. Ich
+konzentriere mich dabei auf die Konsole, denn nur auf der Konsole kann man meiner Meinung
+nach die Arbeitsweise von GIT verinnerlichen. Grafische Clients kann man sp"ater immer
+noch einsetzen!
+
+\chapter{Fachbegriffe}
+Ohne Fachbegriffe, die "uberwiegend in Englisch sind, kommt man leider bei der Benutzung
+und der Erkl"arung von GIT nicht aus, deshalb hier die grundlegenden Fachbegriffe:
+
+``Repository'':
+
+Man kann es als ``Projekt'' bezeichnen. Im Repository (verk"urzt auch nur ``Repo'' genannt)
+findet man die Verzeichnnisse und Dateien des Projektes wieder.
+
+``Einchecken'':
+
+Neue Dateien, die zum Repo hinzugef"ugt werden, werden ``eingecheckt'', aber wenn auch
+"Anderungen an Dateien dem Repo hinzugef"ugt werden, spricht man von ``einchecken''. Auch
+``commit'' genannt.
+
+``Auschecken'' / ``Klonen'':
+
+Unter ``Auschecken'' versteht man umgangssprachlich(!) das Herunterladen eines GIT-Repositories.
+Korrekterweise bedeutet ``auschecken'', dass sog. ``Zweige'' auscheckt. Der Begriff des Zweiges
+wird sp"ater genauer erl"autert. An dieser Stelle sei nur sovierl dazu gesagt, dass man mit Zweigen
+Projekte weiter unterteilen kann.
+
+Wenn man ein Repository klont, dann bezieht sich das auf das GIT-Kommando, um ein Repository
+von einem GIT-Server herunterzuladen.
+
+``Branch'':
+
+Ein ``Branch'' ist ein Zweig eines Projektes. Dazu sp"ater mehr.
+
+``Merge'':
+
+Das Zusammenf"uhren zweier Zweige wird als ``merge'' bezeichnet.
+
+\chapter{Erste Schritte mit GIT}
+
+Um mit GIT zu arbeiten, braucht man erst einmal das Programm.\\
+Unter Linux kann man sich GIT mit Hilfe des distributionseigenen Installationsprogrammes
+installieren. Unter Debian oder Ubuntu zum Beispiel per \textit{aptitude install git}, bzw. per
+\textit{apt-get install git}. RedHat oder CentOS liefert GIT per \textit{yum install git}
+auf die Platte. Und unter MacOS d"urfte \textit{brew install git} zum Erfolg f"uhren. Mangels
+MAC kann ich das nicht pr"ufen.\\
+Ein Tip: Vergiss erst einmal grafische Clients, das ist Bl"odsinn, denn damit lernt man nicht
+mit GIT umzugehen und zu verstehen! Denk auch nicht an irgendwelche Server oder gar an GitHub!
+Wir fangen einfach an und das ist lokal bei dir auf deinem Computer.\\
+\\
+Los geht's!\\
+\\
+"Offne eine Konsole deiner Wahl. Bash, zsh, ksh, egal. Irgendwas, wo du mit Hilfe deiner
+Tastatur deinem Rechner Kommandos senden kannst\footnote{Manche Shells ben"otigen den
+Befehl \textit{rehash}, wenn neue Software hinzugekommen ist}.\\
+Es empfiehlt sich, f"ur Git-Repos ein eigenes Verzeichnis anzulegen. Zum Beispiel \textit{git}
+oder \textit{projekte}, oder, oder, oder.\\
+Ich selbst verwende \textit{git}.\\
+\\
+Also: \textit{mkdir git}, dann \textit{cd git}.\\
+\\
+Jetzt legen wir ein Verzeichnis f"ur unser erstes Projekt an. Lass uns das Projekt ``Welt''
+nennen: \textit{mkdir Welt}. Per \textit{cd Welt} wechseln wir in das neue Verzeichnis.\\
+Jetzt wird es ernst, wir erzeugen unser erstes GIT-Repository: \textit{git init}. Yes!\\
+Wenn man nun per \textit{ls -oha} nachguckt, sollte das Verzeichnis so aussehen:
+\begin{verbatim}
+insgesamt 12K
+drwxrwxr-x  3 hauke 4,0K Mar 22 13:03 .
+drwxrwxr-x 18 hauke 4,0K Mar 22 13:03 ..
+drwxrwxr-x  7 hauke 4,0K Mar 22 13:03 .git
+\end{verbatim}
+Das Verzeichnis .git ist ein verstecktes Verzeichnis, dort stehen Informationen f"ur GIT in
+diversen Dateien.\\
+\\
+Wir k"onnen nun loslegen, Dateien anzulegen. Fangen wir erst einmal einfach an und legen
+eine Datei LIESMICH an. Ich verwende an dieser Stelle den Editor vi, wenn du aber einen
+anderen Editor verwenden magst, nutze diesen; es geht nur darum, Text in eine einfache
+Datei zu schreiben (Officeprogramme scheiden also aus!).\\
+Der Inhalt der Datei soll ganz einfach sein:
+\begin{verbatim}
+Projekt Welt
+\end{verbatim}
+Abspeichern nicht vergessen!\\
+Jetzt sieht unser Verzeichnis (\textit{ls -oha}) so aus:
+\begin{verbatim}
+insgesamt 16K
+drwxrwxr-x  3 hauke 4,0K Mar 22 13:20 .
+drwxrwxr-x 18 hauke 4,0K Mar 22 13:03 ..
+drwxrwxr-x  7 hauke 4,0K Mar 22 13:06 .git
+-rw-rw-r--  1 hauke   14 Mar 22 13:20 LIESMICH
+\end{verbatim}
+Jetzt fragen wir mal GIT, was es davon h"alt, dass in dem Repository eine Datei neu
+angelegt wurde. Dazu geben wir \textit{git status} ein. Das Ergebnis sollte in etwa so aussehen:
+\begin{verbatim}
+Auf Branch master
+
+Initialer Commit
+
+Unversionierte Dateien:
+  (benutzen Sie "git add <Datei>...", um die Aenderungen
+   zum Commit vorzumerken)
+
+        LIESMICH
+
+nichts zum Commit vorgemerkt, aber es gibt unversionierte
+Dateien
+(benutzen Sie "git add" zum Versionieren)
+\end{verbatim}
+GIT gibt uns einige Informationen:\\
+Wir sind auf dem Branch (Zweig) ``master''. Dazu - wie gesagt - sp"ater mehr.\\
+Unser erstes Einchecken (commit) steht bevor; es ist der initiale Commit.\\
+Git hat festgestellt, dass es Dateien gibt, "uber die es nichts weiss. Unversionierte
+Dateien also. Die Datei(en) wird/werden aufgez"ahlt und es gibt - zumindest bei mir -
+einen hilfreichen Tip, was man machen sollte (\textit{git add ...}).\\
+Also, ran an den Speck und die Datei per \textit{git add LIESMICH} zum Einchecken vormerken.
+Ein \textit{git status} sollte nun folgendes ergeben:
+\begin{verbatim}
+Auf Branch master
+
+Initialer Commit
+
+zum Commit vorgemerkte Aenderungen:
+  (benutzen Sie "git rm --cached <Datei>..." zum
+   Entfernen aus der Staging-Area)
+
+        new file:   LIESMICH
+\end{verbatim}
+Prima, das sieht schon anders, besser aus!\\
+Jetzt kann ich nat"urlich weitere Dateien anlegen und per \textit{git add ...} vormerken,
+oder ich kann diese eine Datei in das Repository "ubernehmen, den ``commit'' also
+durchf"uhren. \textit{git commit LIESMICH} f"uhrt den Commit auf die Datei LIESMICH aus.
+Es sollte sich ein Editorfenster "offnen, denn GIT bietet dir jetzt an, in einem
+Kommentar kurz zu erl"autern,
+was du gemacht hast. Dieser Text taucht dann in der Historie des Projektes sp"ater auf.
+Beispiel: ``LIESMICH angelegt''. Kurz und knackig sollte der Kommentar sein, aber auch
+so geschrieben, dass du sp"ater noch weisst, was du seinerzeit gemacht hast.\\
+GIT gibt dir auch hier wieder eine R"uckmeldung:
+\begin{verbatim}
+[master (Basis-Commit) 19a30b3] LIESMICH angelegt
+ 1 file changed, 2 insertions(+)
+ create mode 100644 LIESMICH
+\end{verbatim}
+In der ersten Zeile wird der Branch angezigt, der Commit-Hash (ist auch an dieser Stelle
+nicht weiter wichtig, ich erw"ahne es aber dennoch, der "Ubersicht halber) und dein
+Kommentar. In der zweite Zeile wird die Anzahl der ver"anderten Dateien, sowie hinzugekommene
+Zeilen (insertions) und (hier noch nicht sichtbar) die Anzahl der entfernten Zeilen.
+In der dritten Zeile stehen dann noch Information bzgl. des Modus der Datei (create), die
+Dateirechte und der Dateiname.\\
+Super, damit ist die erste Version des Projektes ``Welt'' im GIT-Repository angekommen.
+
+Am Beispiel einer weiteren Datei zeige ich dir nun auch erste ``Vereinfachungen'', denn mal
+angenommen, du hast auf einem Satz mehrere Dutzend Dateien neu in deinem Projekt, dann
+wirst du nicht per \textit{git add datei1}, \textit{git add datei2}, usw. jede einzelne
+Datei vormerken. Die Sache ginge ja dann so sp"ater beim commit weiter. Also, eher wird
+der BER fertig, als dass du mit deinem Projekt weiterkommst!\\
+Als Beispiel gibt es jetzt das Shellskript ``welt.sh'':
+\begin{verbatim}
+#!/bin/sh
+
+echo "Hallo Welt"
+\end{verbatim}
+Jetzt kommt das ``add'' mal etwas anders: \textit{git add .} Du hast den Punkt hinter ``add''
+bemerkt? Gut! Damit hast du jetzt alle neuen Dateien in diesem Verzeichnis (Unterverzeichnisse,
+sofern vorhanden mit eingeschlossen) zum einchecken vorgemerkt. \textit{git status} wird
+dir das anzeigen.\\
+Jetzt das tats"achliche Einchecken in das Repository und da verrate ich dir den n"achsten
+Trick: Den Kommentar direkt angeben, ohne dass ein Editor erst "offnet: \textit{git commit -a
+-m 'Projekt erweitert, neue Dateien hinzugefuegt'}.\\
+Das erkl"are ich mal genauer:\\
+-a bedeutet, dass alle (-a = all) Dateien, die vorher per \textit{git add .}, bzw. per
+\textit{git add dateiname} vorgemerkt wurden nun in das Repo "ubernommen werden sollen. Du siehst:
+Man kann auch erst einmal ``sammeln''.\\
+-m bedeutet, dass nun ein Kommentar kommt (-m = message). Der Text sollte in Anf"uhrungszeichen
+stehen, sonst macht die Shell "Arger.\\
+Und damit hast du bereits die ersten Schritte gemacht.\\
+Hier noch mal zusammengefasst die Schritte, die im Wesentlichen immer wieder wiederholt
+werden, nachdem man das Projektverzeichnis angelegt und GIT initialisiert hat:
+\begin{itemize}
+\item Datei anlegen
+\item git add
+\item git commit
+\item Datei anlegen
+\item git add
+\item git commit
+\item ...
+\end{itemize}
+Oder aber man macht:
+\begin{itemize}
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item git add .
+\item git commit -a
+\item Datei anlegen
+\item ...
+\end{itemize}
+
+\chapter{GIT konfigurieren}
+Oftmals sehen die Logs von GIT ziemlich d"amllich aus, was meistens daran liegt, dass
+die Benutzer ihr GIT nicht ordentlich konfiguriert haben. F"ur eine vern"unftige
+Konfiguration bedarf es des korrekten Namens und der Mailadresse.\\
+Dies geschieht per \textit{git config ...}. Beispiel:
+\textit{git config user.name 'Max Mustermann'}, um den Namen festzulegen und
+\textit{git config user.email 'mmuster@exampel.kom} f"ur die Mailadresse.\\
+Damit sind Name und Mailadresse f"ur dieses eine Projekt festgelegt. Damit das
+f"ur alle GIT-Repositories gilt, f"ugt man die Option \textit{--global} hinzu, also
+\textit{git config --global user.name 'Max Mustermann'} und
+\textit{git config --global user.email 'mmuster@exampel.kom}.\\
+Man kann nat"urlich noch eine Menge mehr konfigurieren, aber hier geht es um die Grundlagen.
+
+\chapter{Zweige}
+Bisher haben wir uns geradlinig auf dem Zeitstrahl bewegt, aber wenn man im Team an
+einem gro"sen Projekt arbeitet, dann erledigt jeder, bzw. jede entsprechende Unteraufgaben.
+Um solche Unteraufgaben zu organisieren, nutzt man in Versionskontrollsystemen sog.
+``Zweige''. Leider kann man das nicht direkt mit einem Baum vergleichen, denn zwar
+gibt es sowohl beim Baum als auch in GIT einen Hauptzweig/Stamm und (mehr oder weniger)
+viele Zweige, bei einem Baum werden die Zweige aber nicht wieder zum Stamm zur"uckgef"uhrt.
+Bei Versionskontrollsystemen jedoch werden Zweige fr"uher oder sp"ater wieder in den Hauptzweig
+"uberf"uhrt.\\
+\\
+Am Anfang befindet man sich immer auf dem Hauptzweig, dem sog. ``Masterbranch''. Du hast das
+bereits in diversen Meldungen von GIT gesehen.\\
+Das sieht dann so aus:
+\begin{verbatim}
+master A--B--C--D--E--F
+\end{verbatim}
+Um nun einen neuen Zweig zu erzeugen, gibt man
+\textit{git checkout -b <Zweigname>}\footnote{-b bedeutet, dass der Zweig erzeugt und sofort
+ausgecheckt wird, d.h. man befindet sich sofort auf diesem Zweig} ein.
+Angenommen, ich will als Unteraufgabe zum Projekt ``Welt'' ein ``Hallo'' programmieren,
+dann erzeuge ich den Zweig ``Hallo'' per \textit{git checkout -b hallo}. Wir sind nun im Zweig
+``hallo''. Um das zu "uberpr"ufen gibt es \textit{git branch}:
+\begin{verbatim}
+* hallo
+  master
+\end{verbatim}
+Der kleine Stern in der ersten Spalte zeigt den Zweig an, in dem wir uns aktuell befinden.\\
+Will ich auf den Zwei ``master'' zur"uckwechslen, gebe ich \textit{git checkout master} ein.
+Wichtig: Hier wird kein ``-b'' verwendet, da es den Zweig ``master'' bereits gibt!\\
+\\
+Bist du also im Zweig ``hallo'', gehst du wieder wie immer vor: Datei(en) anlegen, vormerken,
+einchecken.\\
+Das sieht dann so aus:
+\begin{verbatim}
+master A--B--C--D--E--F
+           \
+hallo       G--H--I--J--K
+\end{verbatim}
+Das sollte soweit klar sein, aber irgendwann kommt der Punkt, an dem du den
+Zweig ``hallo'' wieder in den Zweig ``master'' zur"uckf"uhren willst/musst.\\
+Dazu wechselst du erst einmal in den Zweig ``master'' zur"uck. Nun sagst du GIT, dass du den
+Zweig ``hallo'' in den Masterbranch ``mergen'' willst: \textit{git merge hallo}.
+Es "offnet sich wieder ein Editor, indem (meistens) bereits eine Information vorgegeben ist:
+\begin{verbatim}
+Merge branch 'hallo'
+\end{verbatim}
+Hinweis: Es muss(!) ein Kommentar angegeben werden, und sei es nur der vorgegebene
+Standardkommentar!\\
+Wenn alles gutgegangen ist, sind nun alle Dateien des ``hallo''-Zweiges im Masterbranch.\\
+Das sieht dann so aus:
+\begin{verbatim}
+master A--B--C--D--E--F---L
+           \             /
+hallo       G--H--I--J--K
+\end{verbatim}
+In der Softwareentwicklung wird generell mit mehreren Zweigen gearbeitet, um zu verhindern,
+dass ungetestete und in der Entwicklung befindliche Dateien Einzug in das fertige Projekt
+nehmen. Es gibt daher einmal nat"urlich den Zweig ``master'', in dem das fertige Produkt
+liegt, dann den Zweig ``develop'', in dem entwickelt wird und von dem weitere Zweige mit
+weiteren Unteraufgaben abgeleitet werden. Wenn in ``develop'' alles ordentllich l"auft, dann
+wird dieser in den Masterbranch gemergt und das Produkt wird ver"offentlicht.
+Dadurch ergibt sich mit der Zeit eine durchaus recht breite Struktur, die aber dem Team
+hilft, dass man sich nicht in die Quere kommt und letztendlich auch den "Uberblick
+beh"alt.
+
+\chapter{Ein erstes Fazit}
+Du solltest nun in der Lage sein, lokal auf deinem Rechner GIT-Repositories anzulegen,
+Dateien hinzuzuf"ugen und diese auch in das Repo zu laden. Ausserdem solltest du dir
+auch "uber Zweige klar sein und diese verwenden k"onnen, denn mit Hilfe von Zweigen wird
+eine koordinierte Teamarbeit in einem Projekt erst m"oglich, aber auch wenn du alleine
+an einem Projekt arbeitest, solltest du dir angew"ohnen, f"ur jede Teilaufgabe einen eigenen
+Zweig anzulegen.
+
+\chapter{Dateien l"oschen und umbenennen}
+Dateien anlegen kannst du jetzt schon fl"ussig, was aber ist, wenn du eine versionierte Datei
+nicht mehr brauchst, oder wenn du dich beim Namen vertippt hast?\\
+Keine Panik, auch das geht mit GIT.\\
+Um eine Datei zu l"oschen, die im GIT-Repository ist, verwendest du den Removebefehl:
+\textit{git rm <dateiname>}. Danach f"uhrst du ein \textit{git commit -m 'Kommentar'} aus und die
+Datei ist von jetzt an nicht mehr vorhanden.\\
+Umbenennen geht ebenfalls sehr einfach: \textit{git mv <alter name> <neuer name>}. Auch danach
+wieder ein \textit{git commit -m 'Kommentar'} und die Datei hat von nun an einen neuen
+Namen.\\
+Moment mal, was soll das heissen ``von nun an''?\\
+Ganz einfach: Da man mit GIT auch "altere Versionen des Repositories auschecken kann, hat in
+fr"uheren Versionen die Datei nat"urlich noch ihren alten Namen, bzw. ist im Repo noch
+vorhanden! Wie man fr"uhere Versionen auscheckt, erkl"are ich aber sehr viel sp"ater.
+
+\chapter{GIT-Server}
+
+\section{Einstieg}
+So, jetzt kommt der sog. ``heisse Scheiss''! GIT in Verwendung mit einem GIT-Server!\\
+Bisher hast du deine Repositories lokal auf deinem Rechner gehabt und das ist am Anfang
+auch gut so, aber stelle dir vor, deine Festplatte zerlegt sich und dein echt tolles
+Projekt wird damit geschreddert. Dann n"utzt dir auch GIT nichts mehr. Gut, du h"attest
+regelm"a"sig eine Sicherung deines Repos auf DVD, CD, USB-Stick oder wo auch immer anlegen
+k"onnenen, aber mal ehrlich, das ist nicht Sinn und Zweck von GIT. Ausserdem funktioniert
+so die Teamarbeit an einem Projekt nicht.
+Also ben"otigt man externen Speicherplatz. Auf einem GIT-Server.\\
+Als Plattform kannst du "offentliche Server nehmen. GitHub sei hier erw"ahnt.\\
+Du kannst dir einen GIT-Server auch auf einem kleinen Raspberry Pi in deinem Heimnetzwerk
+einrichten. Oder du mietest dir einen eigenen Rootserver und packst dort deinen GIT-Server
+drauf. Alles kein Problem!
+
+\section{GitHub}
+GitHub ist eine - f"ur nichtkommerzielle Projekte - kostenlose Plattform, die GIT anbietet.
+Man kann nat"urlich Geld zahlen, dann bekommt man etwas mehr an ``Features'' auf der Plattform,
+aber f"ur den Hausgebrauch reicht die kostenlose Variante.\\
+Du meldest dich bei GitHub an und hinterlegst dort deinen "offentlichen
+SSH-Schl"ussel\footnote{Wie man SSH-Schl"ussel erstellt, m"ogest du bitte im WWW selbst"andig
+suchen}.\\
+Du kannst dort deine Projekte komplett verwalten, die Seite ist sehr "ubersichtlich
+aufgebaut und es gibt auch eine Hilfefunktion.
+
+\section{GIT-Server im Heimnetzwerk}
+F"ur einen GIT-Server im eigenen Heimnetzwerk eignet sich ein Raspberry Pi wunderbar. Der
+sollte nat"urlich "uber LAN (und nicht via WLAN) mit dem Netz verbunden sein, damit die
+Daten"ubertragung m"oglichst hastig erfolgen kann. Eine FritzBox zum Beispiel hat
+Gigabitinterfaces, da kann man schon mal gut was "uber die Leitung jagen (wobei des Raspberries
+Interface langsamer ist).\\
+Als GIT-Serversoftware empfehle ich an dieser Stelle gogs\footnote{https://gogs.io/}.\\
+Wenn du dich damit besch"aftigen willst, solltest du aber "uber gute Linuxkenntnisse
+verf"ugen.\\
+Mit gogs hast du eine Weboberfl"ache, "ahnlich wie bei GitHub, unter der du deine Projekte
+recht einfach verwalten kannst. Du hast auch die M"oglichkeit, private Projekte dort anzulegen.
+
+\section{GIT from scratch}
+Ich habe keine bessere "Uberschrift gefunden, aber wenn du keine Lust auf GitHub oder gogs oder
+wie auch immer das coole (Web-)Frontend heisst, dann reicht auch...git.\\
+Dann legst du als Benutzer ``root'' einen Benutzer ``git'' an. Hast du das erledigt, wirst
+du zum Benutzer ``git'' und legst ein Verzeichnis ``.ssh'' im Benutzerverzeichnis von ``git''
+an. In das Verzeichnis ``.ssh'' kommen in die Datei ``authorized\_keys'' die "offentlichen
+SSH-Schl"ussel der Benutzer, die git benutzen d"urfen.\\
+Also:
+\begin{verbatim}
+sudo adduser git
+su git
+mkdir .ssh
+chmod 700 .ssh
+\end{verbatim}
+Jetzt kannst du - als Benutzer ``git'' anfangen, Repositories anzulegen:
+\begin{verbatim}
+mkdir Welt.git
+cd Welt.git
+git --bare init
+\end{verbatim}
+Du siehst hier wieder den ``init''-Befehl, diesmal jedoch mit der Option ``--bare''. Diese
+Option sorgt daf"ur, dass kein sog. ``Arbeitsverzeichnis'' angelegt wird, d.h. es fehlt das
+.git-Verzeichnis, daf"ur sind dort andere Dateien und Verzeichnisse erzeugt werden, die
+zur Verwaltung eines GIT-Repositories n"otig sind (guck einfach mal per \textit{ls -oha} nach).
+Okay, du hast keine Lust? So sieht das Verzeichnis dann aus:
+\begin{verbatim}
+drwxrwxr-x  7 git 4,0K Mar 22 18:11 .
+drwxrwxr-x 19 git 4,0K Mar 22 18:11 ..
+drwxrwxr-x  2 git 4,0K Mar 22 18:11 branches
+-rw-rw-r--  1 git   66 Mar 22 18:11 config
+-rw-rw-r--  1 git   73 Mar 22 18:11 description
+-rw-rw-r--  1 git   23 Mar 22 18:11 HEAD
+drwxrwxr-x  2 git 4,0K Mar 22 18:11 hooks
+drwxrwxr-x  2 git 4,0K Mar 22 18:11 info
+drwxrwxr-x  4 git 4,0K Mar 22 18:11 objects
+drwxrwxr-x  4 git 4,0K Mar 22 18:11 refs
+\end{verbatim}
+Falls du es dir noch nicht gedacht hast: Du kannst das lokal auf deinem Rechner machen! Damit
+wird dein Rechner zum GIT-Server! Und was auf deinem Rechner funktioniert, klappt auch auf
+einem Raspberry Pi, der in deinem Keller oder auf dem Dachboden rumliegt oder auf dem
+dicken Server, der irgendwo in einem Rechenzentrum in Deutschland steht.
+
+\chapter{Projekt ``Welt'' auf den Server bringen}
+Nachdem du also einen GIT-Server irgendwie ans Laufen gebracht hast, oder du dich bei GitHub
+angemeldet hast, soll das ``Welt''-Projekt nun auf den entfernten Server gebracht werden.
+
+Ob dein GIT-Server nun auf deinem Raspberry oder auf deinem lokalen Server l"auft, der Unterschied
+liegt in der Benennung des Rechners. Ich erkl"are dir die folgenden Schritte unter der Annahme,
+dass du den GIT-Server auf deinem Rechner installiert hast. Die Transferleistung hin zum
+Raspberry Pi oder einem Rootserver "uberlasse ich dir.\\
+Um dein Projekt auf den Server hochzuladen, musst du dich im Repoverzeichnis befinden, wo wir uns am
+Anfang dieses Papiers aufgehalten haben. Also \textit{cd ~/git/Welt}. Zu Beginn wollen wir
+den Masterbranch hochladen, also zur Sicherheit ein \textit{git checkout master} machen.\\
+Achtung, jetzt geht es los:\\
+\begin{verbatim}
+git remote add origin git@localhost:Welt.git
+git push origin master
+\end{verbatim}
+Damit hast du deinen Masterbranch auf den Masterbranch des GIT-Servers geladen, wobei der Server
+daf"ur sorgt, dass deine "Anderungen mit dem bereits bestehenden Branch ``gemergt'' werden.
+Bei einem krachneuen Branch ist das nat"urlich nicht n"otig, aber sp"ater einmal, wenn du
+ein ganzes Team an deinem Projekt mitwerkeln l"asst, dann ist das wichtig.\\
+\\
+Also, mal die Erkl"arung:\\
+Mit der ersten Zeile hast du deinem Repository gesagt, dass unter dem Namen ``origin'' ein
+entferntes (remote) Repo existiert. Und zwar beim Benutzer ``git'' auf dem Rechner ``localhost''
+im Repository ``Welt.git''.\\
+Mit der zweite Zeile hast du dann den aktuellen Branch hochgeladen (push) und zwar zu dem
+entfernten Repository ``origin'' in dessen Branch ``master''.\\
+Die Bezeichnung ``origin'' f"ur ein entferntes Repository ist Standard. Du h"attest es auch
+``Pizza'' oder ``Koeln'' nennen k"onnen, Namen sind Schall und Rauch. Dein ``push'' w"are dann
+\textit{git push Pizza master}, bzw. \textit{git push Koeln master}. Es ist nur ein Name f"ur die
+Verbindungsdaten zum Server (git@localhost:Welt.git).\\
+\\
+Jetzt hat sich deine Arbeitsweise etwas erweitert:
+\begin{itemize}
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item git add .
+\item git commit -a
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item Datei anlegen
+\item git add .
+\item git commit -a
+\item git push origin master
+\item ...
+\end{itemize}
+(Gesetzt den Fall, du bist im Masterbranch)
+
+\chapter{Arbeiten im Team}
+Du hast bisher alleine mit GIT gearbeitet, hast aber das Projekt, bzw.
+die Projekte mit einem GIT-Server verwaltet.\\
+Dann ist der Schritt hin zur Teamarbeit f"ur dich recht leicht, denn
+du weisst ja, dass du mit \textit{git push ...} Ver"anderungen
+hochl"adst.\\
+Da aber deine Kolleginnen und Kollegen auch fleissig waren, solltest
+du deren "Anderungen  mindestestens einmal am Tag herunterladen
+und deine Arbeitskopie damit aktuell halten.\\
+Das gilt besonders f"ur die Zweige, die regelm"a"sigen "Anderungen
+unterworfen sind. Dies sind meistens
+\begin{itemize}
+\item master
+\item develop
+\item testing
+\end{itemize}
+Um deine Arbeitskopie zu aktualisieren, wechselst du in den entsprechenden
+Zwei (zum Beispiel ``develop'') und f"uhrst dort \textit{git pull} aus.\\
+Damit werden die "Anderungen vom Server heruntergeladen und in deinen Zweig
+eingepflegt.\\
+\\
+Ein Beispiel aus dem realen Leben:\\
+Wenn man in einer Software einen Fehler findet, wird erst einmal ein
+Bericht geschrieben und dieser Bericht bekommt eine sog. ``Ticketnummer''.
+Zum Beispiel 4711.\\
+Du sollst nun Ticket 4711 bearbeiten. Es wird immer (meistens) aus dem
+Zweig ``develop'' ein neuer Zweig erstellt. Das heisst, du wechselst
+per \textit{git checkout develop} in den Entwicklungszweig und
+f"uhrst hier \textit{git pull} aus. Damit ist dein Zweig aktuell und
+du kannst mit \textit{git checkout -b bug-4711} den Zweig erzeugen,
+um den Fehler zu beheben.\\
+Bist du irgendwann fertig damit (und hast immer wieder \textit{git
+pull origin bug-4711} gemacht, kannst du deinen Zweig wieder in
+den Developbranch ``zur"uckmergen'', bzw ``zur"uckmergen'' lassen.
+``Lassen'' deshalb, weil in der Regel ein anderer Programmierer
+erst deinen Code testet und f"ur den Merge freigibt, aber das ist
+abh"angig von den Regeln der jeweiligen IT-Abteilung.
+
+\chapter{"Altere Version auschecken}
+Es wird selten gebraucht, aber manchmal denkt man: ``Verdammt,
+an dem Punkt da vor ein paar Tagen/Wochen/Monaten, da lief
+das System besser!''\\
+Besonders, wenn man mal ``was ausprobieren'' will, ist es
+ganz nett, wenn man eine ``uralte'' Version des Projektes
+auschecken kann.\\
+Geht recht einfach!\\
+Na gut, man muss ein wenig arbeiten, denn zuerst muss man
+den richtigen Commit wiederfinden. Um das Log eines GIT-Projektes
+anzuzeigen, verwendet man \textit{git log}.\\
+Das sieht zum Beispiel so aus:
+\begin{verbatim}
+commit 43632ef9d9ed259a33d030d2e71549bba752e97b
+Author: Max Mustermann <hzuehl@phone-talk.net>
+Date:   Tue Mar 27 18:10:22 2018 +0200
+
+    blah => blubb
+
+commit 90845d50545e2bb7069622dbe0c645241f25e9d2
+Merge: 19a30b3 201d71f
+Author: Max Mustermann <hzuehl@phone-talk.net>
+Date:   Thu Mar 22 15:08:02 2018 +0100
+
+    Merge branch 'hallo'
+
+commit 201d71f352307d88b98aa4d1c5d5892b468948e7
+Author: Max Mustermann <hzuehl@phone-talk.net>
+Date:   Thu Mar 22 15:07:54 2018 +0100
+
+    Blah
+
+commit 19a30b330ab250a6d3ab3f0a9ecf1c6d9b2d9fd5
+Author: Hauke Zühl <hzuehl@phone-talk.net>
+Date:   Thu Mar 22 13:40:59 2018 +0100
+
+    LIESMICH angelegt
+\end{verbatim}
+Zur Info: Ich bin zur Zeit im Masterbranch.\\
+\begin{verbatim}
+-rw-rw-r-- 1 hauke  0 Mar 22 15:08 blubb
+-rw-rw-r-- 1 hauke 14 Mar 22 13:20 LIESMICH
+\end{verbatim}
+Jetzt will ich die Version vom 22.3, 13:40:59 auschecken.
+Das ist der Commit\\
+19a30b330ab250a6d3ab3f0a9ecf1c6d9b2d9fd5.
+Dann mal los: \textit{git checkout\\
+19a30b330ab250a6d3ab3f0a9ecf1c6d9b2d9fd5}\\
+Das ist verdammt lang, oder?\\
+An dieser Stelle ein Hinweis: Es reichen die eersten 7 Zeichen
+des Hashes des Commits, also ein \textit{git checkout 19a30b3}
+h"atte es auch getan!\\
+Wie dem auch sein, das Verzeichnis sieht jetzt so aus:
+\begin{verbatim}
+-rw-rw-r-- 1 hauke 14 Mar 22 13:20 LIESMICH
+\end{verbatim}
+Es fehlt also eine Datei (``blubb'')! Logisch, die gab es zu diesem
+Zeitpunkt noch nicht.\\
+Aber Vorsicht: Es muss nicht sein, dass du dich dann noch in dem
+gew"unschten Zweig befindest; du kannst an jeder Stelle jede
+"Anderung auschecken und von da an weitermachen!\\
+Tip: Das solltest du ein wenig "uben und noch ein Tip: An
+dieser Stelle sind grafische GIT-Clients sehr n"utzlich, um
+dir eine gute "Ubersicht "uber dein Projekt zu geben.\\
+Wenn du aber tapfer bist und auf der Konsole bleiben willst,
+bitte sch"on: \textit{git log --graph} zaubert
+ein sch"ones Log auf den Bildschirm. Und wenn du die Kurzform
+der Commits haben willst, dann bringt dich
+\textit{git log --abbrev-commit --graph} ans Ziel.
+
+\chapter{Zum Ende noch ein paar Ideen und Worte}
+Zum Ende hin noch ein paar Anregungen bzgl. der Einsatzzwecke
+von GIT.\\
+Man kann GIT alleine nutzen, kein Problem. Das f"angt mit den
+eigenen Skripten und Programmen an, geht "uber Korrespondenz
+bis hin zu Konfigurationsdateien des Rechners (bzw. der Rechner).
+Nimm dir zum Beispiel einen Raspberry Pi als GIT- und Puppetserver,
+dann kannst du deine Linuxb"uchsen ganz einfach per Puppet
+konfigurieren.\\
+Oder du willst dir nicht gleich einen Cloudserver einrichten, dann
+kannst du deine pers"onlichen Dateien mit Hilfe von GIT verwalten.\\
+\\
+Ich hoffe, ich konnte dir einen kleinen Einblick in die Arbeitsweise
+von GIT vermitteln. Es ist ein wenig "Ubung n"otig, aber mit der Zeit
+hast du die Grundkommandos verinnerlicht und solltest keine Probleme
+mehr haben.\\
+Tip: Committe oft! Damit ist nicht nur das ``commit'' gemeint, sondern
+durchaus auch das ``push''. ``push'' sollte aber definitiv immer kurz
+vor Feierabend gemacht werden.\\
+Mit dieser Einstellung sorgst du daf"ur, dass man deine "Anderungen
+bessser nachvollziehen kann; es ist einfacher, zwei oder drei Zeilen
+sp"ater nachzuvollziehen, als wenn du 234 Zeilen in 20 Dateien
+"anderst und man diese "Anderungen sp"ater nachvollziehen will.
+\\
+Viel Spa"s mit GIT.
+
+\end{document}
