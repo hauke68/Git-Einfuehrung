@@ -388,7 +388,85 @@ Als GIT-Serversoftware empfehle ich an dieser Stelle gogs\footnote{https://gogs.
 Wenn du dich damit besch"aftigen willst, solltest du aber "uber gute Linuxkenntnisse
 verf"ugen.\\
 Mit gogs hast du eine Weboberfl"ache, "ahnlich wie bei GitHub, unter der du deine Projekte
-recht einfach verwalten kannst. Du hast auch die M"oglichkeit, private Projekte dort anzulegen.
+recht einfach verwalten kannst. Du hast auch die M"oglichkeit, private Projekte dort anzulegen
+und mit Hilfe der Benutzerverwaltung kannst du auch Einfluss darauf nehmen, was deineTeammitgleider
+alles so d"urfen.
+
+\subsection{gogs}
+Gogs ist ein kleines, aber feines Projekt, das ein Webfrontend f"ur einen git-Server bereitstellt.
+Es ist in der Programmiersprache go geschrieben und ben"otigt nur minimale Resourcen.
+
+\subsubsection{Installation}
+Von https://gogs.io/docs/installation/install\_from\_binary l"adt man sich die passende Version
+f"ur seinen Server runter und entpackt diese. Das entstandene Verzeichnis wird dann in das
+Benutzerverzeichnis des Benutzers ``git'' verschoben und diesem zu eigen gemacht (chown).\\
+Im Verzeichnis gogs/scripts findest du Beispiele, um gogs auf deinem System bei Systemstart
+automatisch zu starten. Das geht zum Beispiel via init oder systemd.\\
+Nat"urllich solltest du die Dateien entsprechend f"ur dein System anpassen, sonst stimmen
+die Pfade unter Umst"anden nicht.
+
+\subsubsection{Konfiguration}
+Im Verzeichnis gogs, wird nun ein ``mkdir -p custom/conf'' durchgef"uhrt, um das Verzeichnis
+f"ur die Konfigurationsdatei ``app.ini'' zu erzeugen.\\
+Ein Beispiel f"ur eine app.ini:
+\begin{verbatim}
+APP_NAME = Gogs
+RUN_USER = git
+RUN_MODE = prod
+
+[repository]
+ROOT = /home/git/repositories
+
+[database]
+DB_TYPE  = postgres
+HOST     = 127.0.0.1:5432
+NAME     = gogs
+USER     = gogs
+PASSWD   = GEHEIM
+SSL_MODE = disable
+PATH     = data/gogs.db
+
+[server]
+DOMAIN           = git.hauke-zuehl.de
+HTTP_PORT        = 3000
+ROOT_URL         = https://git.hauke-zuehl.de/
+DISABLE_SSH      = false
+SSH_PORT         = 22
+START_SSH_SERVER = false
+OFFLINE_MODE     = false
+
+[mailer]
+ENABLED = false
+
+[service]
+REGISTER_EMAIL_CONFIRM = true
+ENABLE_NOTIFY_MAIL     = true
+DISABLE_REGISTRATION   = true
+ENABLE_CAPTCHA         = true
+REQUIRE_SIGNIN_VIEW    = true
+
+[picture]
+DISABLE_GRAVATAR        = false
+ENABLE_FEDERATED_AVATAR = true
+
+[session]
+PROVIDER = file
+
+[log]
+MODE      = file
+LEVEL     = Info
+ROOT_PATH = /home/git/gogs/log
+
+[security]
+INSTALL_LOCK = true
+\end{verbatim}
+Bitte daran denken, dass diese Datei als Eigent"umer den Benutzer ``git'' haben muss!\\
+In diesem Beispiel habe ich "ubrigens PostgreSQL als Datenbanksystem verwendet, du
+kannst aber gerne MariaDB oder MySQL verwenden.
+
+\subsubsection{Der erste Start}
+
+Und hier weiss ich nicht mehr, wie ich das gemacht habe!
 
 \section{GIT from scratch}
 Ich habe keine bessere "Uberschrift gefunden, aber wenn du keine Lust auf GitHub oder gogs oder
@@ -397,6 +475,9 @@ Dann legst du als Benutzer ``root'' einen Benutzer ``git'' an. Hast du das erled
 du zum Benutzer ``git'' und legst ein Verzeichnis ``.ssh'' im Benutzerverzeichnis von ``git''
 an. In das Verzeichnis ``.ssh'' kommen in die Datei ``authorized\_keys'' die "offentlichen
 SSH-Schl"ussel der Benutzer, die git benutzen d"urfen.\\
+Warum wird das mit den Schl"usseln gemacht?\\
+Ganz einfach: Ansonsten m"usstest du jedem Teammitglied das Passwort des Benutzers ``git''
+verraten und das willst du wirklich nicht!\\
 Also:
 \begin{verbatim}
 sudo adduser git
@@ -434,7 +515,8 @@ dicken Server, der irgendwo in einem Rechenzentrum in Deutschland steht.
 
 \chapter{Projekt ``Welt'' auf den Server bringen}
 Nachdem du also einen GIT-Server irgendwie ans Laufen gebracht hast, oder du dich bei GitHub
-angemeldet hast, soll das ``Welt''-Projekt nun auf den entfernten Server gebracht werden.
+angemeldet hast, deinen "offentlichen SSH-Schl"ussel auf den Server geladen hast, soll das
+``Welt''-Projekt nun auf den entfernten Server gebracht werden.
 
 Ob dein GIT-Server nun auf deinem Raspberry oder auf deinem lokalen Server l"auft, der Unterschied
 liegt in der Benennung des Rechners. Ich erkl"are dir die folgenden Schritte unter der Annahme,
@@ -502,7 +584,7 @@ unterworfen sind. Dies sind meistens
 \item testing
 \end{itemize}
 Um deine Arbeitskopie zu aktualisieren, wechselst du in den entsprechenden
-Zwei (zum Beispiel ``develop'') und f"uhrst dort \textit{git pull} aus.\\
+Zweig (zum Beispiel ``develop'') und f"uhrst dort \textit{git pull} aus.\\
 Damit werden die "Anderungen vom Server heruntergeladen und in deinen Zweig
 eingepflegt.\\
 \\
@@ -592,6 +674,46 @@ bitte sch"on: \textit{git log --graph} zaubert
 ein sch"ones Log auf den Bildschirm. Und wenn du die Kurzform
 der Commits haben willst, dann bringt dich
 \textit{git log --abbrev-commit --graph} ans Ziel.
+
+\chapter{GIT in IDEs}
+Die meisten IDEs bringen inzwischen Unterst"utzung f"ur GIT mit.\\
+
+\section{NetBeans}
+NetBeans ist eine recht verbreitete IDE, die kostenlos f"ur diverse
+Plattformen angeboten wird.\\
+Die Verbindung von NetBeans zu GIT kann "uber ein Plugin ggf.
+nachinstalliert werden.\\
+Startet man NetBeans, hat man unter Team->Git die M"oglichkeit,
+GIT-Repos zu verwenden.\\
+Als Beispiel verwende ich nun das Repository unter
+https://github.com/hauke68/LibTgBotPP, das jedoch das C-/C++-Plugin
+voraussetzt.\\
+Um dies anonym auszuchecken und in ein NetzBeans-Projekt zu packen,
+geht man wie folgt vor:\\
+Unter Team->Git->Clone wird die obige URL eingetragen. Benutzer
+und Passwort bleiben leer. Im n"achsten Schritt kann man die
+Zweige ausw"ahlen, die ausgecheckt werden sollen. Ich empfehle,
+erst einmal alle auszuchecken. Im dritten Schritt lassen wir alles
+so, wie es ist.\\
+Ist alles ordnugsgem"a"s ausgecheckt, sollten wir im Git Repository
+Browser bereits das GIT-Repo sehen. Nun fehlt noch das NetBeans-Projekt.\\
+Dazu auf File->New Project klicken und ein neues C-/C++-Projekt anlegen.
+Dabei darauf achten, dass im Fenster ``Projects'' ``C/C++ Project with
+existing sources'' ausgew"ahlt ist. Im zweiten Schritt w"ahlen wir
+das Verzeichnis aus, in dem die Quellen des Repos sind. Das ist nat"urlich
+das vorhin erzeugte Verzeichnis vom GIT-Repo.\\
+Da das hier nur ein Beispiel ist, w"ahlen wir als Configuration Mode
+``custom'' aus. Jetzt nur noch auf ``Next'' klciken, bis nur noch
+``Finish'' m"oglich ist. Voila, das NetBeans-Projekt existiert und
+man kann auch GIT als Versionskontrollsystem verwenden.\\
+Wenn du nun eine Datei l"adst, "anderst und speicherst, kannst du
+unter ``Team'' sehen, dass es mehr Auswahlm"oglichkeiten in Bezug
+auf GIT gibt.\\
+Spiele hier einfach mal ein wenig rum. Da du das Repo anonym
+ausgecheckt hast, kannst du nichts kaputt machen. Etwas anderes
+w"are es nat"urlich, wenn du unser Einstiegsprojekt ``Welt'' mit
+Hilfe von NetBeans bearbeiten willst. Ich wei"s aber nicht, in
+welche Kategorie dieses ``Projekt'' f"allt.
 
 \chapter{Zum Ende noch ein paar Ideen und Worte}
 Zum Ende hin noch ein paar Anregungen bzgl. der Einsatzzwecke
