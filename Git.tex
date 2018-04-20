@@ -15,6 +15,9 @@
 \usepackage{times}                      % Times-Schriftart (pdf)
 \usepackage{calc}
 
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+
 \begin{document}
 
 \title{GIT - Eine Einf"uhrung}
@@ -396,18 +399,42 @@ alles so d"urfen.
 Gogs ist ein kleines, aber feines Projekt, das ein Webfrontend f"ur einen git-Server bereitstellt.
 Es ist in der Programmiersprache go geschrieben und ben"otigt nur minimale Resourcen.
 
+\subsubsection{Vorbereiten der Datenbank}
+Bevor du dir gogs herunterl"adst und installierst, solltest du das Datenbanksystem
+ausw"ahlen, das gogs sp"ater benutzen soll. Du kannst zwischen MariaDB/MySQL und PostgreSQL
+w"ahlen. Gut, es giobt noch SQLite, MSSQL oder TiDB nutrzen, aber die ersten beiden will man
+nicht wirklich und TiDB ist wohl noch zu speziell.
+
+\paragraph{PostgreSQL}
+Am einfachsten loggst du dich per ``sudo su - postgres'' als Benutzer postgres in deiner
+Shell auf deinem GIT-Server ein, dann erzeugst du per ``createuser -P -d gogs'' einen Benutzer
+f"ur die Datenbank ``gogs''.\\
+Im n"achsten Schritt loggst du dich auf der Shell per ``psql -h localhost template1 gogs''
+in das Datenbanksystem ein. Hier reicht nun ein ``CREATE DATABASE gogs;'', um die Datenbank
+f"ur gogs anzulegen.
+
+\paragraph{MariaDB/MySQL}
+Du loggst dich mit dem administrativen Benutzer in MariaDB/MySQL, den du bei der Installation
+eingerichtet hast, in das Datenbanksystem ein. Das ist oft der Datenbankbenutzer ``root''
+(nicht zu verwechseln mit dem Systembenutzer ``root''). Also ``mysql -p -u root''. Nun
+erfolgt ein ``GRANT ALL PRIVILEGES ON gogs.* to 'gogs'@'localhost' IDENTIFIED BY
+'geheimes passwort';''. Dann loggst du dich aus, loggst dich per ``mysql -p -u gogs''
+wieder ein und f"uhrst ein ``CREATE DATABASE gogs CHARACTER SET utf8mb4;'' aus,
+um die Datenbank f"ur gogs anzulegen.
+
 \subsubsection{Installation}
 Von https://gogs.io/docs/installation/install\_from\_binary l"adt man sich die passende Version
 f"ur seinen Server runter und entpackt diese. Das entstandene Verzeichnis wird dann in das
 Benutzerverzeichnis des Benutzers ``git'' verschoben und diesem zu eigen gemacht (chown).\\
 Im Verzeichnis gogs/scripts findest du Beispiele, um gogs auf deinem System bei Systemstart
 automatisch zu starten. Das geht zum Beispiel via init oder systemd.\\
-Nat"urllich solltest du die Dateien entsprechend f"ur dein System anpassen, sonst stimmen
+Nat"urlich solltest du die Dateien entsprechend f"ur dein System anpassen, sonst stimmen
 die Pfade unter Umst"anden nicht.
 
 \subsubsection{Konfiguration}
 Im Verzeichnis gogs, wird nun ein ``mkdir -p custom/conf'' durchgef"uhrt, um das Verzeichnis
-f"ur die Konfigurationsdatei ``app.ini'' zu erzeugen.\\
+f"ur die Konfigurationsdatei ``app.ini'', die beim ersten Start von gogs angelegt wird,
+zu erzeugen.\\
 Ein Beispiel f"ur eine app.ini:
 \begin{verbatim}
 APP_NAME = Gogs
@@ -466,7 +493,17 @@ kannst aber gerne MariaDB oder MySQL verwenden.
 
 \subsubsection{Der erste Start}
 
-Und hier weiss ich nicht mehr, wie ich das gemacht habe!
+Du startest gogs zun"achst "uber die Kommandozeil per ``./gogs web'' und gibst dann in
+deinem Webbrowser die URL ``http://localhost:3000'' ein.\\
+Du wirst nun durch die Konfiguration der Datenbank und von gogs gef"uhrt. Bei der Domain
+solltest du den Server- oder einen ordentlichen Domainnamen eingeben. Hast du also zum
+Beispiel einen kleinen RaspberryPi zu Hause, auf dem gogs laufen soll, und dieser heisst
+``pi.deinzuhause.net'' dann gibst du eben diesen Namen bei der Domain und der Application
+URL ein.\\
+Den Datenbankbenutzer f"ur gogs und die entsprechende Datenbank solltest du nun auch
+anlegen, sonst kracht es bei der Einrichtung der Tabellen.\\
+Hast du soweit alles eingetragen, kannst du dich anmelden und deine Projekte mit gogs
+verwalten.
 
 \section{GIT from scratch}
 Ich habe keine bessere "Uberschrift gefunden, aber wenn du keine Lust auf GitHub oder gogs oder
