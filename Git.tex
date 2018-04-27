@@ -402,8 +402,9 @@ Es ist in der Programmiersprache go geschrieben und ben"otigt nur minimale Resou
 \subsubsection{Vorbereiten der Datenbank}
 Bevor du dir gogs herunterl"adst und installierst, solltest du das Datenbanksystem
 ausw"ahlen, das gogs sp"ater benutzen soll. Du kannst zwischen MariaDB/MySQL und PostgreSQL
-w"ahlen. Gut, es giobt noch SQLite, MSSQL oder TiDB nutrzen, aber die ersten beiden will man
-nicht wirklich und TiDB ist wohl noch zu speziell.
+w"ahlen. Gut, es giobt noch SQLite, MSSQL oder TiDB nutzen, aber die ersten beiden will man
+nicht wirklich und TiDB ist wohl noch zu speziell. Achte darauf, dass MySQL/MariaDB auch
+tats"achlich auf dem Netzwerkinterface horcht, das du bei der Installation angibst!\\
 
 \paragraph{PostgreSQL}
 Am einfachsten loggst du dich per ``sudo su - postgres'' als Benutzer postgres in deiner
@@ -421,6 +422,14 @@ erfolgt ein ``GRANT ALL PRIVILEGES ON gogs.* to 'gogs'@'localhost' IDENTIFIED BY
 'geheimes passwort';''. Dann loggst du dich aus, loggst dich per ``mysql -p -u gogs''
 wieder ein und f"uhrst ein ``CREATE DATABASE gogs CHARACTER SET utf8mb4;'' aus,
 um die Datenbank f"ur gogs anzulegen.
+\\
+\textbf{Hinweis:} Sollte bei Benutzung von MariaDB w"ahrend der Installation im
+Webbrowser die Fehlermeldung ``Datenbankeinstellungen sind nicht korrekt: Error 1071: Specified key was too long; max key length is 767 bytes'', dann folgende Befehle in der
+MariaDB-Kommandozeile ausf"uhren:
+\begin{verbatim}
+set global innodb_large_prefix=on;
+set global innodb_file_format=Barracuda;
+\end{verbatim}
 
 \subsubsection{Installation}
 Von https://gogs.io/docs/installation/install\_from\_binary l"adt man sich die passende Version
@@ -431,10 +440,9 @@ automatisch zu starten. Das geht zum Beispiel via init oder systemd.\\
 Nat"urlich solltest du die Dateien entsprechend f"ur dein System anpassen, sonst stimmen
 die Pfade unter Umst"anden nicht.
 
-\subsubsection{Konfiguration}
-Im Verzeichnis gogs, wird nun ein ``mkdir -p custom/conf'' durchgef"uhrt, um das Verzeichnis
-f"ur die Konfigurationsdatei ``app.ini'', die beim ersten Start von gogs angelegt wird,
-zu erzeugen.\\
+\subsubsection{Konfigurationsdatei}
+Um sp"ater noch ein wenig Feintuning vorzunehmen, kann man im Verzeichnis ``custom/conf''
+die Datei ``app.ini'' "andern, die bei der Installation automatisch angelegt wird.\\
 Ein Beispiel f"ur eine app.ini:
 \begin{verbatim}
 APP_NAME = Gogs
@@ -487,7 +495,9 @@ ROOT_PATH = /home/git/gogs/log
 [security]
 INSTALL_LOCK = true
 \end{verbatim}
-Bitte daran denken, dass diese Datei als Eigent"umer den Benutzer ``git'' haben muss!\\
+Bitte daran denken, dass diese Datei als Eigent"umer den Benutzer ``git'' haben muss!
+Wenn du aber bei der Installation oben alles korrekt eingetragen hast, sollte
+es keine Probleme geben.\\
 In diesem Beispiel habe ich "ubrigens PostgreSQL als Datenbanksystem verwendet, du
 kannst aber gerne MariaDB oder MySQL verwenden.
 
@@ -503,7 +513,10 @@ URL ein.\\
 Den Datenbankbenutzer f"ur gogs und die entsprechende Datenbank solltest du nun auch
 anlegen, sonst kracht es bei der Einrichtung der Tabellen.\\
 Hast du soweit alles eingetragen, kannst du dich anmelden und deine Projekte mit gogs
-verwalten.
+verwalten.\\
+Der erste Benutzer, der sich registriert bei gogs, wird "ubrigens als Administrator
+angelegt, also Obacht! Von nun kannst du gogs in aller Ruhe erforschen und
+eigene Repositores anlegen, Organiosationen und Teams erzeugen, usw.!
 
 \section{GIT from scratch}
 Ich habe keine bessere "Uberschrift gefunden, aber wenn du keine Lust auf GitHub oder gogs oder
