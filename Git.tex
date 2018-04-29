@@ -15,6 +15,9 @@
 \usepackage{times}                      % Times-Schriftart (pdf)
 \usepackage{calc}
 
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+
 \begin{document}
 
 \title{GIT - Eine Einf"uhrung}
@@ -388,7 +391,134 @@ Als GIT-Serversoftware empfehle ich an dieser Stelle gogs\footnote{https://gogs.
 Wenn du dich damit besch"aftigen willst, solltest du aber "uber gute Linuxkenntnisse
 verf"ugen.\\
 Mit gogs hast du eine Weboberfl"ache, "ahnlich wie bei GitHub, unter der du deine Projekte
-recht einfach verwalten kannst. Du hast auch die M"oglichkeit, private Projekte dort anzulegen.
+recht einfach verwalten kannst. Du hast auch die M"oglichkeit, private Projekte dort anzulegen
+und mit Hilfe der Benutzerverwaltung kannst du auch Einfluss darauf nehmen, was deineTeammitgleider
+alles so d"urfen.
+
+\subsection{gogs}
+Gogs ist ein kleines, aber feines Projekt, das ein Webfrontend f"ur einen git-Server bereitstellt.
+Es ist in der Programmiersprache go geschrieben und ben"otigt nur minimale Resourcen.
+
+\subsubsection{Vorbereiten der Datenbank}
+Bevor du dir gogs herunterl"adst und installierst, solltest du das Datenbanksystem
+ausw"ahlen, das gogs sp"ater benutzen soll. Du kannst zwischen MariaDB/MySQL und PostgreSQL
+w"ahlen. Gut, es giobt noch SQLite, MSSQL oder TiDB nutzen, aber die ersten beiden will man
+nicht wirklich und TiDB ist wohl noch zu speziell. Achte darauf, dass MySQL/MariaDB auch
+tats"achlich auf dem Netzwerkinterface horcht, das du bei der Installation angibst!\\
+
+\paragraph{PostgreSQL}
+Am einfachsten loggst du dich per ``sudo su - postgres'' als Benutzer postgres in deiner
+Shell auf deinem GIT-Server ein, dann erzeugst du per ``createuser -P -d gogs'' einen Benutzer
+f"ur die Datenbank ``gogs''.\\
+Im n"achsten Schritt loggst du dich auf der Shell per ``psql -h localhost template1 gogs''
+in das Datenbanksystem ein. Hier reicht nun ein ``CREATE DATABASE gogs;'', um die Datenbank
+f"ur gogs anzulegen.
+
+\paragraph{MariaDB/MySQL}
+Du loggst dich mit dem administrativen Benutzer in MariaDB/MySQL, den du bei der Installation
+eingerichtet hast, in das Datenbanksystem ein. Das ist oft der Datenbankbenutzer ``root''
+(nicht zu verwechseln mit dem Systembenutzer ``root''). Also ``mysql -p -u root''. Nun
+erfolgt ein ``GRANT ALL PRIVILEGES ON gogs.* to 'gogs'@'localhost' IDENTIFIED BY
+'geheimes passwort';''. Dann loggst du dich aus, loggst dich per ``mysql -p -u gogs''
+wieder ein und f"uhrst ein ``CREATE DATABASE gogs CHARACTER SET utf8mb4;'' aus,
+um die Datenbank f"ur gogs anzulegen.
+\\
+\textbf{Hinweis:} Sollte bei Benutzung von MariaDB w"ahrend der Installation im
+Webbrowser die Fehlermeldung ``Datenbankeinstellungen sind nicht korrekt: Error 1071: Specified key was too long; max key length is 767 bytes'', dann folgende Befehle in der
+MariaDB-Kommandozeile ausf"uhren:
+\begin{verbatim}
+set global innodb_large_prefix=on;
+set global innodb_file_format=Barracuda;
+\end{verbatim}
+
+\subsubsection{Installation}
+Bevor du dir gleich die Software runterl"adst, lege bitte einen Benutzer ``git'' auf deinem
+Server an, sofern der Benutzer noch nicht existiert.\\
+Von https://gogs.io/docs/installation/install\_from\_binary l"adt man sich die passende Version
+f"ur seinen Server runter und entpackt diese. Das entstandene Verzeichnis wird dann in das
+Benutzerverzeichnis des Benutzers ``git'' verschoben und diesem zu eigen gemacht (chown).\\
+Im Verzeichnis gogs/scripts findest du Beispiele, um gogs auf deinem System bei Systemstart
+automatisch zu starten. Das geht zum Beispiel via init oder systemd.\\
+Nat"urlich solltest du die Dateien entsprechend f"ur dein System anpassen, sonst stimmen
+die Pfade unter Umst"anden nicht.
+
+\subsubsection{Konfigurationsdatei}
+Um sp"ater noch ein wenig Feintuning vorzunehmen, kann man im Verzeichnis ``custom/conf''
+die Datei ``app.ini'' "andern, die bei der Installation automatisch angelegt wird.\\
+Ein Beispiel f"ur eine app.ini:
+\begin{verbatim}
+APP_NAME = Gogs
+RUN_USER = git
+RUN_MODE = prod
+
+[repository]
+ROOT = /home/git/repositories
+
+[database]
+DB_TYPE  = postgres
+HOST     = 127.0.0.1:5432
+NAME     = gogs
+USER     = gogs
+PASSWD   = GEHEIM
+SSL_MODE = disable
+PATH     = data/gogs.db
+
+[server]
+DOMAIN           = git.hauke-zuehl.de
+HTTP_PORT        = 3000
+ROOT_URL         = https://git.hauke-zuehl.de/
+DISABLE_SSH      = false
+SSH_PORT         = 22
+START_SSH_SERVER = false
+OFFLINE_MODE     = false
+
+[mailer]
+ENABLED = false
+
+[service]
+REGISTER_EMAIL_CONFIRM = true
+ENABLE_NOTIFY_MAIL     = true
+DISABLE_REGISTRATION   = true
+ENABLE_CAPTCHA         = true
+REQUIRE_SIGNIN_VIEW    = true
+
+[picture]
+DISABLE_GRAVATAR        = false
+ENABLE_FEDERATED_AVATAR = true
+
+[session]
+PROVIDER = file
+
+[log]
+MODE      = file
+LEVEL     = Info
+ROOT_PATH = /home/git/gogs/log
+
+[security]
+INSTALL_LOCK = true
+\end{verbatim}
+Bitte daran denken, dass diese Datei als Eigent"umer den Benutzer ``git'' haben muss!
+Wenn du aber bei der Installation oben alles korrekt eingetragen hast, sollte
+es keine Probleme geben.\\
+In diesem Beispiel habe ich "ubrigens PostgreSQL als Datenbanksystem verwendet, du
+kannst aber gerne MariaDB oder MySQL verwenden.
+
+\subsubsection{Der erste Start}
+
+Du startest gogs zun"achst "uber die Kommandozeil per ``./gogs web'' und gibst dann in
+deinem Webbrowser die URL ``http://localhost:3000'' ein.\\
+Du wirst nun durch die Konfiguration der Datenbank und von gogs gef"uhrt. Bei der Domain
+solltest du den Server- oder einen ordentlichen Domainnamen eingeben. Hast du also zum
+Beispiel einen kleinen RaspberryPi zu Hause, auf dem gogs laufen soll, und dieser heisst
+``pi.deinzuhause.net'' dann gibst du eben diesen Namen bei der Domain und der Application
+URL ein.\\
+Den Datenbankbenutzer f"ur gogs und die entsprechende Datenbank solltest du nun auch
+anlegen, sonst kracht es bei der Einrichtung der Tabellen.\\
+Hast du soweit alles eingetragen, kannst du dich anmelden und deine Projekte mit gogs
+verwalten.\\
+Der erste Benutzer, der sich registriert bei gogs, wird "ubrigens als Administrator
+angelegt, also Obacht! Von nun kannst du gogs in aller Ruhe erforschen und
+eigene Repositores anlegen, Organiosationen und Teams erzeugen, usw.!
 
 \section{GIT from scratch}
 Ich habe keine bessere "Uberschrift gefunden, aber wenn du keine Lust auf GitHub oder gogs oder
@@ -397,6 +527,9 @@ Dann legst du als Benutzer ``root'' einen Benutzer ``git'' an. Hast du das erled
 du zum Benutzer ``git'' und legst ein Verzeichnis ``.ssh'' im Benutzerverzeichnis von ``git''
 an. In das Verzeichnis ``.ssh'' kommen in die Datei ``authorized\_keys'' die "offentlichen
 SSH-Schl"ussel der Benutzer, die git benutzen d"urfen.\\
+Warum wird das mit den Schl"usseln gemacht?\\
+Ganz einfach: Ansonsten m"usstest du jedem Teammitglied das Passwort des Benutzers ``git''
+verraten und das willst du wirklich nicht!\\
 Also:
 \begin{verbatim}
 sudo adduser git
@@ -434,7 +567,8 @@ dicken Server, der irgendwo in einem Rechenzentrum in Deutschland steht.
 
 \chapter{Projekt ``Welt'' auf den Server bringen}
 Nachdem du also einen GIT-Server irgendwie ans Laufen gebracht hast, oder du dich bei GitHub
-angemeldet hast, soll das ``Welt''-Projekt nun auf den entfernten Server gebracht werden.
+angemeldet hast, deinen "offentlichen SSH-Schl"ussel auf den Server geladen hast, soll das
+``Welt''-Projekt nun auf den entfernten Server gebracht werden.
 
 Ob dein GIT-Server nun auf deinem Raspberry oder auf deinem lokalen Server l"auft, der Unterschied
 liegt in der Benennung des Rechners. Ich erkl"are dir die folgenden Schritte unter der Annahme,
@@ -502,7 +636,7 @@ unterworfen sind. Dies sind meistens
 \item testing
 \end{itemize}
 Um deine Arbeitskopie zu aktualisieren, wechselst du in den entsprechenden
-Zwei (zum Beispiel ``develop'') und f"uhrst dort \textit{git pull} aus.\\
+Zweig (zum Beispiel ``develop'') und f"uhrst dort \textit{git pull} aus.\\
 Damit werden die "Anderungen vom Server heruntergeladen und in deinen Zweig
 eingepflegt.\\
 \\
@@ -592,6 +726,46 @@ bitte sch"on: \textit{git log --graph} zaubert
 ein sch"ones Log auf den Bildschirm. Und wenn du die Kurzform
 der Commits haben willst, dann bringt dich
 \textit{git log --abbrev-commit --graph} ans Ziel.
+
+\chapter{GIT in IDEs}
+Die meisten IDEs bringen inzwischen Unterst"utzung f"ur GIT mit.\\
+
+\section{NetBeans}
+NetBeans ist eine recht verbreitete IDE, die kostenlos f"ur diverse
+Plattformen angeboten wird.\\
+Die Verbindung von NetBeans zu GIT kann "uber ein Plugin ggf.
+nachinstalliert werden.\\
+Startet man NetBeans, hat man unter Team->Git die M"oglichkeit,
+GIT-Repos zu verwenden.\\
+Als Beispiel verwende ich nun das Repository unter
+https://github.com/hauke68/LibTgBotPP, das jedoch das C-/C++-Plugin
+voraussetzt.\\
+Um dies anonym auszuchecken und in ein NetzBeans-Projekt zu packen,
+geht man wie folgt vor:\\
+Unter Team->Git->Clone wird die obige URL eingetragen. Benutzer
+und Passwort bleiben leer. Im n"achsten Schritt kann man die
+Zweige ausw"ahlen, die ausgecheckt werden sollen. Ich empfehle,
+erst einmal alle auszuchecken. Im dritten Schritt lassen wir alles
+so, wie es ist.\\
+Ist alles ordnugsgem"a"s ausgecheckt, sollten wir im Git Repository
+Browser bereits das GIT-Repo sehen. Nun fehlt noch das NetBeans-Projekt.\\
+Dazu auf File->New Project klicken und ein neues C-/C++-Projekt anlegen.
+Dabei darauf achten, dass im Fenster ``Projects'' ``C/C++ Project with
+existing sources'' ausgew"ahlt ist. Im zweiten Schritt w"ahlen wir
+das Verzeichnis aus, in dem die Quellen des Repos sind. Das ist nat"urlich
+das vorhin erzeugte Verzeichnis vom GIT-Repo.\\
+Da das hier nur ein Beispiel ist, w"ahlen wir als Configuration Mode
+``custom'' aus. Jetzt nur noch auf ``Next'' klciken, bis nur noch
+``Finish'' m"oglich ist. Voila, das NetBeans-Projekt existiert und
+man kann auch GIT als Versionskontrollsystem verwenden.\\
+Wenn du nun eine Datei l"adst, "anderst und speicherst, kannst du
+unter ``Team'' sehen, dass es mehr Auswahlm"oglichkeiten in Bezug
+auf GIT gibt.\\
+Spiele hier einfach mal ein wenig rum. Da du das Repo anonym
+ausgecheckt hast, kannst du nichts kaputt machen. Etwas anderes
+w"are es nat"urlich, wenn du unser Einstiegsprojekt ``Welt'' mit
+Hilfe von NetBeans bearbeiten willst. Ich wei"s aber nicht, in
+welche Kategorie dieses ``Projekt'' f"allt.
 
 \chapter{Zum Ende noch ein paar Ideen und Worte}
 Zum Ende hin noch ein paar Anregungen bzgl. der Einsatzzwecke
