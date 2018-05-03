@@ -6,14 +6,17 @@
 \usepackage{float}
 \usepackage{german}
 \usepackage{ae}
+\usepackage{alltt}
+\usepackage{amssymb}
 
-\usepackage[latin1]{inputenc}           % Umlaute und dt. Zeichen Kodieren
+\usepackage[utf8]{inputenc}           % Umlaute und dt. Zeichen Kodieren
 
 % ae.sty verwenden!
 \usepackage[T1]{fontenc}                % ec* Schriftarten verwenden
 
 \usepackage{times}                      % Times-Schriftart (pdf)
 \usepackage{calc}
+\usepackage{lmodern}
 
 \setcounter{secnumdepth}{4}
 \setcounter{tocdepth}{4}
@@ -690,7 +693,7 @@ Date:   Thu Mar 22 15:07:54 2018 +0100
     Blah
 
 commit 19a30b330ab250a6d3ab3f0a9ecf1c6d9b2d9fd5
-Author: Hauke Z�hl <hzuehl@phone-talk.net>
+Author: Hauke Zühl <hzuehl@phone-talk.net>
 Date:   Thu Mar 22 13:40:59 2018 +0100
 
     LIESMICH angelegt
@@ -726,6 +729,276 @@ bitte sch"on: \textit{git log --graph} zaubert
 ein sch"ones Log auf den Bildschirm. Und wenn du die Kurzform
 der Commits haben willst, dann bringt dich
 \textit{git log --abbrev-commit --graph} ans Ziel.
+
+\chapter{Ignorieren von Dateien}
+Ich starte mal mit einem Beispiel, um zu zeigen, was das Problem ist:\\
+Wir gehen jetzt davon aus, dass wir ein C++-Projekt compilieren, d.h.
+aus dem Quellcode ein Programm ``basteln'' wollen. Wenn du dich damit
+nicht auskennst, ist das nicht schlimm, es geht um Dateien und nicht um
+irgendwelche freakigen Sachen.\\
+Zuerst der Verzeichnisbaum eines ``frischen'' Repos:
+\begin{alltt}
+hauke@apollo:~/git/Lara$ tree .
+.
+\textbar\textendash\textendash CMakeLists.txt
+\textbar\textendash\textendash Doxyfile
+\textbar\textendash\textendash README.md
+\textbar\textendash\textendash sql
+\textbar\ \  \textbar\textendash\textendash address.sql
+\textbar\ \  \(\llcorner\)\textendash\textendash customer.sql
+\(\llcorner\)\textendash\textendash src
+    \textbar\textendash\textendash addons
+    \textbar\ \  \textbar\textendash\textendash Address
+    \textbar\ \  \textbar\ \  \textbar\textendash\textendash AddressAddon.cc
+    \textbar\ \  \textbar\ \  \textbar\textendash\textendash AddressAddon.h
+    \textbar\ \  \textbar\ \  \textbar\textendash\textendash AddressMainWindow.cc
+    \textbar\ \  \textbar\ \  \textbar\textendash\textendash AddressMainWindow.h
+    \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash CMakeLists.txt
+    \textbar\ \  \(\llcorner\)\textendash\textendash CMakeLists.txt
+    \textbar\textendash\textendash CMakeLists.txt
+    \textbar\textendash\textendash core
+    \textbar\ \  \textbar\textendash\textendash Addon.h
+    \textbar\ \  \textbar\textendash\textendash Base.cc
+    \textbar\ \  \textbar\textendash\textendash Base.h
+    \textbar\ \  \textbar\textendash\textendash CMakeLists.txt
+    \textbar\ \  \textbar\textendash\textendash Config.cc
+    \textbar\ \  \textbar\textendash\textendash Config.h
+    \textbar\ \  \textbar\textendash\textendash Convert.cc
+    \textbar\ \  \textbar\textendash\textendash Convert.h
+    \textbar\ \  \textbar\textendash\textendash Database.cc
+    \textbar\ \  \textbar\textendash\textendash Database.h
+    \textbar\ \  \textbar\textendash\textendash Files.cc
+    \textbar\ \  \textbar\textendash\textendash Files.h
+    \textbar\ \  \textbar\textendash\textendash IDatabase.cc
+    \textbar\ \  \textbar\textendash\textendash IDatabase.h
+    \textbar\ \  \textbar\textendash\textendash Lara.cc
+    \textbar\ \  \textbar\textendash\textendash Lara.h
+    \textbar\ \  \textbar\textendash\textendash Loader.cc
+    \textbar\ \  \textbar\textendash\textendash Loader.h
+    \textbar\ \  \textbar\textendash\textendash Map.cc
+    \textbar\ \  \textbar\textendash\textendash Map.h
+    \textbar\ \  \textbar\textendash\textendash models
+    \textbar\ \  \textbar\ \  \textbar\textendash\textendash Address.h
+    \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash Customer.h
+    \textbar\ \  \(\llcorner\)\textendash\textendash UserData.h
+    \textbar\textendash\textendash GUI
+    \textbar\ \  \textbar\textendash\textendash CMakeLists.txt
+    \textbar\ \  \textbar\textendash\textendash MainWindow.cc
+    \textbar\ \  \(\llcorner\)\textendash\textendash MainWindow.h
+    \(\llcorner\)\textendash\textendash main.cc
+
+7 directories, 39 files
+\end{alltt}
+Ein ``git status'' s"ahe so aus:
+\begin{verbatim}
+hauke@apollo:~/git/Lara$ git status
+Auf Branch develop
+Ihr Branch ist auf dem selben Stand wie 'origin/develop'.
+nichts zu committen, Arbeitsverzeichnis unverändert
+hauke@apollo:~/git/Lara$
+\end{verbatim}
+
+Um dieses Projekt zu compilieren, muss ich folgende Schritte
+durchf"uhren:
+\begin{itemize}
+\item mkdir build
+\item cd build
+\item cmake ../
+\item make
+\end{itemize}
+Das heisst, ich erzeuge ein neues Verzeichnis namens ``build'',
+wechsele in das dortige Verzeichnis, f"uhre ein wenig Magie aus
+und am Ende f"allt das fertige Programm im Unterverzeichnis ``src''
+raus.\\
+Wenn ich das alles gemacht habe, sieht der Verzeichnisbaum so aus:
+\begin{alltt}
+.
+\textbar\textendash\textendash build
+\textbar\ \  \textbar\textendash\textendash CMakeCache.txt
+\textbar\ \  \textbar\textendash\textendash CMakeFiles
+\textbar\ \  \textbar\ \  \textbar\textendash\textendash 2.8.12.2
+\textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash CMakeCCompiler.cmake
+\textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash CMakeCXXCompiler.cmake
+\textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash CMakeDetermineCompilerABI\_C.bin
+\textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash CMakeDetermineCompilerABI\_CXX.bin
+\textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash CMakeSystem.cmake
+\textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash CompilerIdC
+\textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash a.out
+\textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash CMakeCCompilerId.c
+\textbar\ \  \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash CompilerIdCXX
+\textbar\ \  \textbar\ \  \textbar\ \      \textbar\textendash\textendash a.out
+\textbar\ \  \textbar\ \  \textbar\ \      \(\llcorner\)\textendash\textendash CMakeCXXCompilerId.cpp
+\textbar\ \  \textbar\ \  \textbar\textendash\textendash cmake.check\_cache
+\textbar\ \  \textbar\ \  \textbar\textendash\textendash CMakeDirectoryInformation.cmake
+\textbar\ \  \textbar\ \  \textbar\textendash\textendash CMakeOutput.log
+\textbar\ \  \textbar\ \  \textbar\textendash\textendash CMakeTmp
+\textbar\ \  \textbar\ \  \textbar\textendash\textendash Makefile2
+\textbar\ \  \textbar\ \  \textbar\textendash\textendash Makefile.cmake
+\textbar\ \  \textbar\ \  \textbar\textendash\textendash progress.marks
+\textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash TargetDirectories.txt
+\textbar\ \  \textbar\textendash\textendash cmake\_install.cmake
+\textbar\ \  \textbar\textendash\textendash Makefile
+\textbar\ \  \(\llcorner\)\textendash\textendash src
+\textbar\ \      \textbar\textendash\textendash addons
+\textbar\ \      \textbar\ \  \textbar\textendash\textendash Address
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash address.so
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash CMakeFiles
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash address.dir
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash AddressAddon.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash AddressMainWindow.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash build.make
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash cmake_clean.cmake
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash CXX.includecache
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash DependInfo.cmake
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash depend.internal
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash depend.make
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash flags.make
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash link.txt
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash progress.make
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash CMakeDirectoryInformation.cmake
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash progress.marks
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash cmake\_install.cmake
+\textbar\ \      \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash Makefile
+\textbar\ \      \textbar\ \  \textbar\textendash\textendash CMakeFiles
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash CMakeDirectoryInformation.cmake
+\textbar\ \      \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash progress.marks
+\textbar\ \      \textbar\ \  \textbar\textendash\textendash cmake\_install.cmake
+\textbar\ \      \textbar\ \  \(\llcorner\)\textendash\textendash Makefile
+\textbar\ \      \textbar\textendash\textendash CMakeFiles
+\textbar\ \      \textbar\ \  \textbar\textendash\textendash CMakeDirectoryInformation.cmake
+\textbar\ \      \textbar\ \  \textbar\textendash\textendash lara.dir
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash build.make
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash cmake\_clean.cmake
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash core
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash Base.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash Config.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash Convert.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash Database.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash Files.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash IDatabase.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash Lara.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \textbar\textendash\textendash Loader.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash Map.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash CXX.includecache
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash DependInfo.cmake
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash depend.internal
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash depend.make
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash flags.make
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash GUI
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash MainWindow.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash link.txt
+\textbar\ \      \textbar\ \  \textbar\ \  \textbar\textendash\textendash main.cc.o
+\textbar\ \      \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash progress.make
+\textbar\ \      \textbar\ \  \(\llcorner\)\textendash\textendash progress.marks
+\textbar\ \      \textbar\textendash\textendash cmake\_install.cmake
+\textbar\ \      \textbar\textendash\textendash lara
+\textbar\ \      \(\llcorner\)\textendash\textendash Makefile
+\textbar\textendash\textendash CMakeLists.txt
+\textbar\textendash\textendash Doxyfile
+\textbar\textendash\textendash README.md
+\textbar\textendash\textendash sql
+\textbar\ \  \textbar\textendash\textendash address.sql
+\textbar\ \  \(\llcorner\)\textendash\textendash customer.sql
+\(\llcorner\)\textendash\textendash src
+    \textbar\textendash\textendash addons
+    \textbar\ \  \textbar\textendash\textendash Address
+    \textbar\ \  \textbar\ \  \textbar\textendash\textendash AddressAddon.cc
+    \textbar\ \  \textbar\ \  \textbar\textendash\textendash AddressAddon.h
+    \textbar\ \  \textbar\ \  \textbar\textendash\textendash AddressMainWindow.cc
+    \textbar\ \  \textbar\ \  \textbar\textendash\textendash AddressMainWindow.h
+    \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash CMakeLists.txt
+    \textbar\ \  \(\llcorner\)\textendash\textendash CMakeLists.txt
+    \textbar\textendash\textendash CMakeLists.txt
+    \textbar\textendash\textendash core
+    \textbar\ \  \textbar\textendash\textendash Addon.h
+    \textbar\ \  \textbar\textendash\textendash Base.cc
+    \textbar\ \  \textbar\textendash\textendash Base.h
+    \textbar\ \  \textbar\textendash\textendash CMakeLists.txt
+    \textbar\ \  \textbar\textendash\textendash Config.cc
+    \textbar\ \  \textbar\textendash\textendash Config.h
+    \textbar\ \  \textbar\textendash\textendash Convert.cc
+    \textbar\ \  \textbar\textendash\textendash Convert.h
+    \textbar\ \  \textbar\textendash\textendash Database.cc
+    \textbar\ \  \textbar\textendash\textendash Database.h
+    \textbar\ \  \textbar\textendash\textendash Files.cc
+    \textbar\ \  \textbar\textendash\textendash Files.h
+    \textbar\ \  \textbar\textendash\textendash IDatabase.cc
+    \textbar\ \  \textbar\textendash\textendash IDatabase.h
+    \textbar\ \  \textbar\textendash\textendash Lara.cc
+    \textbar\ \  \textbar\textendash\textendash Lara.h
+    \textbar\ \  \textbar\textendash\textendash Loader.cc
+    \textbar\ \  \textbar\textendash\textendash Loader.h
+    \textbar\ \  \textbar\textendash\textendash Map.cc
+    \textbar\ \  \textbar\textendash\textendash Map.h
+    \textbar\ \  \textbar\textendash\textendash models
+    \textbar\ \  \textbar\ \  \textbar\textendash\textendash Address.h
+    \textbar\ \  \textbar\ \  \(\llcorner\)\textendash\textendash Customer.h
+    \textbar\ \  \(\llcorner\)\textendash\textendash UserData.h
+    \textbar\textendash\textendash GUI
+    \textbar\ \  \textbar\textendash\textendash CMakeLists.txt
+    \textbar\ \  \textbar\textendash\textendash MainWindow.cc
+    \textbar\ \  \(\llcorner\)\textendash\textendash MainWindow.h
+    \(\llcorner\)\textendash\textendash main.cc
+
+23 directories, 103 files
+\end{alltt}
+
+Du siehst den Unterschied!\\
+
+Git w"urde jetzt also alle ``neuen'' Datein unterhalb von build finden
+und nat"urlich daraus schliessen, dass man diese auch ins Repo
+aufnehmen will:
+\begin{verbatim}
+Auf Branch develop
+Ihr Branch ist auf dem selben Stand wie 'origin/develop'.
+Unversionierte Dateien:
+  (benutzen Sie "git add <Datei>...", um die Änderungen zum Commit vorzumerken)
+
+	build/
+
+keine Änderungen zum Commit vorgemerkt (benutzen Sie "git add" und/oder "git commit -a")
+\end{verbatim}
+
+Nein! Will man nicht!\\
+Man h"atte jetzt den ganzen unn"utzen ``M"ull'' f"ur eine bestimmte
+Plattform und das ist nicht Sinn eines Quellcode Repositories.\\
+Ergo m"ussen wir daf"ur sorgen, dass git nicht nervt, wenn wir auf
+unserem Rechner das Programm bauen wollen. Dazu soll git also das
+gesamte Verzeichnis ``build'', mit allen Dateien und Unterverzeichnissen
+ignorieren.\\
+Dazu erstellen wir im Hauptverzeichnis unseres Repos die Datei
+``.gitignore'' (man beachte den Punkt vor dem Dateinamen). Die
+sieht dann so aus:
+\begin{verbatim}
+build/
+\end{verbatim}
+
+Wenn wir jetzt ``git status'' machen, sieht das so aus:
+\begin{verbatim}
+Auf Branch develop
+Ihr Branch ist auf dem selben Stand wie 'origin/develop'.
+nichts zu committen, Arbeitsverzeichnis unverändert
+\end{verbatim}
+
+Cool! Genau das, was wir haben wollen! Das Verzeichnis ``build'' wird
+von git ignoriert.\\
+\\
+Ein weiteres Beispiel:\\
+Unter MacOS wird gerne die Datei ``.DS\_Store'' angelegt. Da diese
+Datei f"ur Nutzer anderer Systeme uninteressant, ja sogar nervig
+ist, sollte man also, wenn Maccies mit im Team sind, in die
+.gitignore die Datei aufnehmen. Dann sieht also die .gitignore
+f"ur unser C++-Projekt so aus:
+\begin{verbatim}
+build/
+.DS_Store
+\end{verbatim}
+
+Je nach Projekt, Programmiersprache, verwendetem Editor, oder 
+verwendeter IDE gibt es noch weitere Dateien, die f"ur andere
+uninteressant oder unwichtig sind. Diese k"onnen dann nach
+und nach in die .gitignore aufgenommen werden, wobei nat"urlich
+auch Wildcards verwendet werden k"onnen.
 
 \chapter{GIT in IDEs}
 Die meisten IDEs bringen inzwischen Unterst"utzung f"ur GIT mit.\\
