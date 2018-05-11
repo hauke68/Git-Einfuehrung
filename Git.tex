@@ -994,7 +994,7 @@ build/
 .DS_Store
 \end{verbatim}
 
-Je nach Projekt, Programmiersprache, verwendetem Editor, oder 
+Je nach Projekt, Programmiersprache, verwendetem Editor, oder
 verwendeter IDE gibt es noch weitere Dateien, die f"ur andere
 uninteressant oder unwichtig sind. Diese k"onnen dann nach
 und nach in die .gitignore aufgenommen werden, wobei nat"urlich
@@ -1028,7 +1028,7 @@ existing sources'' ausgew"ahlt ist. Im zweiten Schritt w"ahlen wir
 das Verzeichnis aus, in dem die Quellen des Repos sind. Das ist nat"urlich
 das vorhin erzeugte Verzeichnis vom GIT-Repo.\\
 Da das hier nur ein Beispiel ist, w"ahlen wir als Configuration Mode
-``custom'' aus. Jetzt nur noch auf ``Next'' klciken, bis nur noch
+``custom'' aus. Jetzt nur noch auf ``Next'' klicken, bis nur noch
 ``Finish'' m"oglich ist. Voila, das NetBeans-Projekt existiert und
 man kann auch GIT als Versionskontrollsystem verwenden.\\
 Wenn du nun eine Datei l"adst, "anderst und speicherst, kannst du
@@ -1039,6 +1039,13 @@ ausgecheckt hast, kannst du nichts kaputt machen. Etwas anderes
 w"are es nat"urlich, wenn du unser Einstiegsprojekt ``Welt'' mit
 Hilfe von NetBeans bearbeiten willst. Ich wei"s aber nicht, in
 welche Kategorie dieses ``Projekt'' f"allt.
+\\
+\textbf{Tip:}\\
+Da NetBeans im Verzeichnis des Quellcodes gerne das Verzeichnis ``nbproject''
+anlegt, sollte dies in die .gitignore aufgenommen werden, das es sonst
+zu Konflikten mit dem nbproject anderer Teammitglieder kommen kann.
+Noch besser w"are es, nbproject ganz woanders hin auszulagern (Zum
+Beispiel in das eigene Benutzerverzeichnis).
 
 \chapter{Zum Ende noch ein paar Ideen und Worte}
 Zum Ende hin noch ein paar Anregungen bzgl. der Einsatzzwecke
